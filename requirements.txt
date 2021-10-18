@@ -1,0 +1,7 @@
+databases==0.5.3
+fastapi==0.70.0
+pydantic==1.8.2
+sqlalchemy==1.4.25
+starlette==0.16.0
+strawberry-graphql==0.84.2
+uvicorn[standard]==0.15.0
