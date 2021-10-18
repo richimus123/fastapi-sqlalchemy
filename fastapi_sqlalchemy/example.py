@@ -9,13 +9,13 @@ import uvicorn
 
 from pydantic import BaseModel
 
-from fastapi_sqlalchemy import api
+from fastapi_sqlalchemy import FastAPIBuilder
 
 DB_URL = os.getenv('DB_URL', 'postgresql://example:example@localhost/example')
 MetaData = sqlalchemy.MetaData()
 
 
-app = api.FastAPIBuilder(database_url=DB_URL)
+app = FastAPIBuilder(database_url=DB_URL)
 AuthorTable = sqlalchemy.Table(
     "author",
     MetaData,
@@ -65,9 +65,9 @@ class BookAuthorModel(BaseModel):
     book_id: int
 
 
-app.add_rest_crud_api('/author', AuthorModel, AuthorTable)
-app.add_rest_crud_api('/book', BookModel, BookTable)
-app.add_rest_crud_api('/book_author', BookAuthorModel, BookAuthorTable)
+app.add_rest_crud_api('/author', AuthorTable, AuthorModel)
+app.add_rest_crud_api('/book', BookTable, BookModel)
+app.add_rest_crud_api('/book_author', BookAuthorTable, BookAuthorModel)
 
 
 @strawberry.type

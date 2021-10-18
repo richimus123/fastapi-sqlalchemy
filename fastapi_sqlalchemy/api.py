@@ -3,6 +3,7 @@
 from typing import Type, Union
 
 import databases
+import pydantic
 import sqlalchemy
 import strawberry
 
@@ -33,13 +34,21 @@ class FastAPIBuilder(FastAPI):
             """Disconnect from the database on shutdown."""
             await self.database.disconnect()
 
+    def add_crud_from_meta(self, meta: sqlalchemy.MetaData) -> None:
+        """Add CRUD endpoints for all tables registered in the metadata."""
+        for table in meta.tables:
+            name = table.__name__.lower().strip()
+            self.add_rest_crud_api(name, table=table)
+
     def add_rest_crud_api(
             self,
             api_path: str,
-            model: Type[BaseModel],
             table: sqlalchemy.Table,
+            model: Type[BaseModel] = None,
     ) -> None:
         """Add a new CRUD interface for a given SQLAlchemy Table and validation model."""
+        if model is None:
+            model = self.generate_model_from_table(table)
 
         @self.post(api_path, tags=[model.__name__])
         async def create(body: model) -> JSONResponse:
@@ -83,3 +92,7 @@ class FastAPIBuilder(FastAPI):
         graphql_app = GraphQL(schema)
         self.add_route("/graphql", graphql_app)
         self.add_websocket_route("/graphql", graphql_app)
+
+    def generate_model_from_table(self, table: sqlalchemy.Table) -> pydantic.BaseModel:
+        """Generate a validation model (pydantic.BaseModel) based upon a SQL Alchemy table."""
+
